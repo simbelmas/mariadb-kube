@@ -1,0 +1,157 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariadb
+  labels:
+    app.kubernetes.io/part-of: mariadb
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/component: mariadb
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: mariadb
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/part-of: mariadb
+  name: mariadb-cm
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+     app.kubernetes.io/component: binlog-purge
+     app.kubernetes.io/name: mariadb
+     app.kubernetes.io/part-of: mariadb
+  name: mariadb-binlog
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/component: mariadb
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/part-of: mariadb
+  name: mariadb
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  labels: &mariadb_labels
+    app.kubernetes.io/component: mariadb
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/part-of: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels: *mariadb_labels
+  serviceName: mariadb
+  template:
+    metadata: 
+      labels: *mariadb_labels
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: mariadb
+        image: quay.io/simbelmas/mariadb-alpine:latest
+        volumeMounts:
+        - name: mariadb-conf
+          mountPath: /etc/my.cnf.kube.d
+        - name: tz-config
+          readOnly: true
+          mountPath: /etc/localtime
+        - name: app-data
+          mountPath: /var/lib/mysql
+        ports:
+          - containerPort: 3306
+      volumes:
+      - name: mariadb-conf
+        configMap:
+          defaultMode: 0640
+          name: mariadb-cm
+      - name: tz-config
+        hostPath:
+          path: /etc/localtime
+      - name: app-data
+        persistentVolumeClaim:
+          claimName: mariadb
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  labels: &mariadb-labels
+     app.kubernetes.io/component: mariadb
+     app.kubernetes.io/name: mariadb
+     app.kubernetes.io/part-of: mariadb
+spec:
+  type: ClusterIP
+  selector: *mariadb-labels
+  ports:
+  - name: mariadb
+    port: 3306
+    protocol: TCP
+    targetPort: 3306
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mariadb-binlog-purge
+  labels: &mariadb-binlog-purge-labels
+    app.kubernetes.io/component: binlog-purge
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/part-of: mariadb
+spec:
+  schedule: "0 11 * * */1"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      labels: *mariadb-binlog-purge-labels
+    spec:
+      ttlSecondsAfterFinished: 259200
+      backoffLimit: 1
+      template:
+        metadata:
+          labels: *mariadb-binlog-purge-labels
+        spec:
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+          containers:
+          - name: mariadb-binlog
+            image: quay.io/simbelmas/mariadb-alpine:latest
+            command: ["/bin/ash", '-e', '-c']
+            args:
+            - echo "PURGE BINARY LOGS BEFORE now() - INTERVAL ${MARIADB_BINLOG_RETENSION_DAYS} DAY;" | mysql --protocol=TCP -h ${MARIADB_SVC_NAME}.${MARIADB_NAMESPACE}.svc.cluster.local --user "$(cat /etc/mybinscr/binlog_usr)" --password="$(cat /etc/mybinscr/binlog_password)" -N
+            env:
+            - name: MARIADB_BINLOG_RETENSION_DAYS
+              value: "7"
+            - name: MARIADB_SVC_NAME
+              value: mariadb
+            - name: MARIADB_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            volumeMounts:
+            - name: binlog-creds
+              mountPath: /etc/mybinscr
+              readOnly: true
+          volumes:
+          - name: binlog-creds
+            secret:
+              defaultMode: 0644
+              secretName: mariadb-binlog
+          restartPolicy: Never
