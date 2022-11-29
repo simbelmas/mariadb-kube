@@ -65,9 +65,6 @@ spec:
         volumeMounts:
         - name: mariadb-conf
           mountPath: /etc/my.cnf.kube.d
-        - name: tz-config
-          readOnly: true
-          mountPath: /etc/localtime
         - name: app-data
           mountPath: /var/lib/mysql
         ports:
@@ -77,9 +74,6 @@ spec:
         configMap:
           defaultMode: 0640
           name: mariadb-cm
-      - name: tz-config
-        hostPath:
-          path: /etc/localtime
       - name: app-data
         persistentVolumeClaim:
           claimName: mariadb
