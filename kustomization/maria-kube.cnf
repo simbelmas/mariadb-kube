@@ -25,3 +25,4 @@ binlog_format = ROW
 log_bin = mariadb-0-bin
 innodb_file_per_table = 1
 datadir = /var/lib/mysql/data
+expire_logs_days= 7

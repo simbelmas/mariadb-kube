@@ -11,5 +11,4 @@ configMapGenerator:
     behavior: merge
     files:
       - maria-kube.cnf
-    literals:
-    - binlog-retension-days=7
+      - expire-logs-days.cnf
