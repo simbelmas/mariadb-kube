@@ -39,7 +39,7 @@ metadata:
 
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: mariadb
   labels: &mariadb_labels
@@ -50,7 +50,8 @@ spec:
   replicas: 1
   selector:
     matchLabels: *mariadb_labels
-  serviceName: mariadb
+  strategy:
+    type: Recreate
   template:
     metadata: 
       labels: *mariadb_labels
@@ -62,6 +63,7 @@ spec:
       containers:
       - name: mariadb
         image: quay.io/simbelmas/mariadb-alpine:stable
+        imagePullPolicy: Always
         volumeMounts:
         - name: mariadb-conf
           mountPath: /etc/my.cnf.kube.d
