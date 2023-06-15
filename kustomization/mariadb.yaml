@@ -62,7 +62,7 @@ spec:
         fsGroup: 1001
       containers:
       - name: mariadb
-        image: quay.io/simbelmas/mariadb-alpine:stable
+        image: quay.io/simbelmas/mariadb:stable
         imagePullPolicy: Always
         volumeMounts:
         - name: mariadb-conf
@@ -128,7 +128,7 @@ spec:
             fsGroup: 1001
           containers:
           - name: mariadb-binlog
-            image: quay.io/simbelmas/mariadb-alpine:stable
+            image: quay.io/simbelmas/mariadb:stable
             command: ["/bin/ash", '-e', '-c']
             args:
             - echo "PURGE BINARY LOGS BEFORE now() - INTERVAL ${MARIADB_BINLOG_RETENSION_DAYS} DAY;" | mysql --protocol=TCP -h ${MARIADB_SVC_NAME}.${MARIADB_NAMESPACE}.svc.cluster.local --user "$(cat /etc/mybinscr/binlog_usr)" --password="$(cat /etc/mybinscr/binlog_password)" -N
