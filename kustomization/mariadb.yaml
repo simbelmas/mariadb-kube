@@ -63,7 +63,7 @@ spec:
       containers:
       - name: mariadb
         image: quay.io/simbelmas/mariadb:stable
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: mariadb-conf
           mountPath: /etc/my.cnf.kube.d
