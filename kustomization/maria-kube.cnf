@@ -10,9 +10,6 @@ query_cache_min_res_unit = 2k
 query_cache_size = 64M
 tmp_table_size= 64M
 max_heap_table_size= 64M
-slow_query_log = 1
-slow_query_log_file = /var/log/map_stdout
-long_query_time = 1
           
 [client]
 default-character-set = utf8mb4
