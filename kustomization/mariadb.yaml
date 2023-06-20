@@ -117,7 +117,7 @@ spec:
       labels: *mariadb-binlog-purge-labels
     spec:
       ttlSecondsAfterFinished: 259200
-      backoffLimit: 1
+      backoffLimit: 0
       template:
         metadata:
           labels: *mariadb-binlog-purge-labels
@@ -129,7 +129,7 @@ spec:
           containers:
           - name: mariadb-binlog
             image: quay.io/simbelmas/mariadb:stable
-            command: ["/bin/ash", '-e', '-c']
+            command: ["/bin/sh", '-e', '-c']
             args:
             - echo "PURGE BINARY LOGS BEFORE now() - INTERVAL ${MARIADB_BINLOG_RETENSION_DAYS} DAY;" | mysql --protocol=TCP -h ${MARIADB_SVC_NAME}.${MARIADB_NAMESPACE}.svc.cluster.local --user "$(cat /etc/mybinscr/binlog_usr)" --password="$(cat /etc/mybinscr/binlog_password)" -N
             env:
