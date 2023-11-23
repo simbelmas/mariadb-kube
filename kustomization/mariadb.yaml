@@ -19,16 +19,6 @@ metadata:
 
 ---
 apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-     app.kubernetes.io/component: binlog-purge
-     app.kubernetes.io/name: mariadb
-     app.kubernetes.io/part-of: mariadb
-  name: mariadb-binlog
-
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:

@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations:
+    kustomize.config.k8s.io/behavior: merge
+  labels:
+     app.kubernetes.io/component: binlog-purge
+     app.kubernetes.io/name: mariadb
+     app.kubernetes.io/part-of: mariadb
+  name: mariadb-binlog

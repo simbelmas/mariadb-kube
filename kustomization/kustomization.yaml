@@ -6,6 +6,13 @@ namespace: mariadb
 resources:
 - mariadb.yaml
 
+secretGenerator:
+- name: mariadb-binlog
+  type: Opaque
+
+patches:
+- path: mariadb-binlog-label.yaml
+
 configMapGenerator:
   - name: mariadb-cm
     behavior: merge
