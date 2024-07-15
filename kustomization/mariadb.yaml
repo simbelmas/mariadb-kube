@@ -9,16 +9,6 @@ metadata:
 
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  labels:
-    app.kubernetes.io/component: mariadb
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/part-of: mariadb
-  name: mariadb-cm
-
----
-apiVersion: v1
 kind: Secret
 metadata:
   labels:
