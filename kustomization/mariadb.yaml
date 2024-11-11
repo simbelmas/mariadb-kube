@@ -124,7 +124,7 @@ spec:
             - echo "PURGE BINARY LOGS BEFORE now() - INTERVAL ${MARIADB_BINLOG_RETENSION_DAYS} DAY;" | mysql --protocol=TCP -h ${MARIADB_SVC_NAME}.${MARIADB_NAMESPACE}.svc.cluster.local --user "$(cat /etc/mybinscr/binlog_usr)" --password="$(cat /etc/mybinscr/binlog_password)" -N
             env:
             - name: MARIADB_BINLOG_RETENSION_DAYS
-              value: "7"
+              value: "3"
             - name: MARIADB_SVC_NAME
               value: mariadb
             - name: MARIADB_NAMESPACE
